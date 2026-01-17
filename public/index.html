@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Auth + Products CRUD</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">S</div>
+      <div>
+        <div class="title">Simple Shop</div>
+        <div class="subtitle">Express + PostgreSQL (Auth + CRUD)</div>
+      </div>
+    </div>
+
+    <div class="userbar">
+      <div id="userInfo" class="userInfo hidden"></div>
+      <button id="btnLogout" class="btn ghost hidden" type="button">Выйти</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- AUTH -->
+    <section id="authSection" class="grid">
+      <div class="card">
+        <h2>Регистрация</h2>
+        <p class="muted">Создай аккаунт.</p>
+
+        <form id="registerForm" class="form">
+          <label class="field">
+            <span>Имя</span>
+            <input id="regName" type="text" placeholder="Alex" required />
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input id="regEmail" type="email" placeholder="a@a.com" required />
+          </label>
+
+          <label class="field">
+            <span>Пароль</span>
+            <input id="regPassword" type="password" placeholder="1234" minlength="4" required />
+          </label>
+
+          <button class="btn primary" type="submit">Зарегистрироваться</button>
+          <div id="regMsg" class="msg"></div>
+        </form>
+      </div>
+
+      <div class="card">
+        <h2>Вход</h2>
+        <p class="muted">Войди, чтобы управлять продуктами.</p>
+
+        <form id="loginForm" class="form">
+          <label class="field">
+            <span>Email</span>
+            <input id="logEmail" type="email" placeholder="a@a.com" required />
+          </label>
+
+          <label class="field">
+            <span>Пароль</span>
+            <input id="logPassword" type="password" placeholder="1234" minlength="4" required />
+          </label>
+
+          <button class="btn primary" type="submit">Войти</button>
+          <div id="logMsg" class="msg"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- APP -->
+    <section id="appSection" class="hidden">
+      <div class="card">
+        <div class="cardHead">
+          <div>
+            <h2>Мои продукты</h2>
+            <p class="muted">Добавление / редактирование / удаление.</p>
+          </div>
+          <button id="btnRefresh" class="btn ghost" type="button">Обновить</button>
+        </div>
+
+        <form id="productForm" class="form formRow">
+          <input id="pTitle" type="text" placeholder="Название" required />
+          <input id="pDesc" type="text" placeholder="Описание (необязательно)" />
+          <input id="pPrice" type="number" step="0.01" min="0" placeholder="Цена" required />
+          <button id="btnCreate" class="btn primary" type="submit">Добавить</button>
+        </form>
+
+        <div id="appMsg" class="msg"></div>
+
+        <div class="tableWrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:70px;">ID</th>
+                <th>Название</th>
+                <th>Описание</th>
+                <th style="width:140px;">Цена</th>
+                <th style="width:240px;">Действия</th>
+              </tr>
+            </thead>
+            <tbody id="productsTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="hint">
+        <div class="hintTitle">API</div>
+        <div class="hintText">
+          <code>POST /api/users/register</code>,
+          <code>POST /api/users/login</code>,
+          <code>GET /api/users/me</code>,
+          <code>GET/POST/PUT/DELETE /api/products</code>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ВАЖНО: подключаем твои два файла -->
+<script src="auth.js"></script>
+<script src="products.api.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
