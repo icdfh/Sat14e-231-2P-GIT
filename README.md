@@ -1,48 +1,41 @@
-Simple Shop — Express + PostgreSQL (Auth + Products CRUD)
+# Simple Shop — Express + PostgreSQL (Auth + Products CRUD)
 
-Учебный проект: регистрация/логин (JWT) + CRUD продуктов.
-Фронт лежит в public/ и раздаётся Express через express.static("public"), поэтому CORS не нужен.
+Учебный проект: регистрация/логин (JWT) + CRUD продуктов.  
+Фронт лежит в `public/` и раздаётся Express через `express.static("public")`, поэтому CORS не нужен.
 
-Что умеет проект
+---
 
-Регистрация пользователя
+## Скриншоты
 
-Вход и получение JWT-токена
+<img width="1920" height="955" alt="image" src="https://github.com/user-attachments/assets/4133f732-9cc2-4084-89c8-7842c01eb2a7" />
 
-Получение профиля me
+![Uploading image.png…]()
 
-CRUD продуктов только текущего пользователя
 
-updated_at обновляется через trigger в PostgreSQL
+---
 
-1) Требования (что поставить заранее)
-1.1 Node.js
+## Возможности
 
-Установить Node.js LTS (подойдёт 18+ / 20+)
+- Регистрация пользователя
+- Вход и получение JWT-токена
+- Профиль текущего пользователя (`/me`)
+- CRUD продуктов (только свои продукты)
+- `updated_at` обновляется автоматически (PostgreSQL trigger)
 
-Проверить:
+---
 
-node -v
-npm -v
+## Стек
 
-1.2 PostgreSQL
+- **Backend:** Node.js, Express
+- **DB:** PostgreSQL
+- **Auth:** JWT (`jsonwebtoken`), пароль через `bcrypt`
+- **Frontend:** HTML / CSS / JS (без фреймворков)
 
-Установить PostgreSQL 14+ (можно 15/16)
+---
 
-Запомнить:
+## Структура проекта
 
-host: localhost
-
-port: 5432
-
-user: postgres
-
-password: (ваш пароль)
-
-2) Структура проекта
-
-Правильная структура (важно не смешивать front/back в одном файле):
-
+```txt
 project/
   index.js
   db.js
@@ -56,51 +49,32 @@ project/
     auth.js
     products.api.js
     script.js
+  assets/
+    screen-1.png
+    screen-2.png
+Установка и запуск
+1) Установить зависимости
+bash
+Копировать код
+npm i
+Если репо пустое и ты собираешь с нуля:
 
-Почему так важно
-
-Всё, что в public/ — выполняется в браузере (там нельзя require, module.exports, express).
-
-Всё, что в routes/ — выполняется в Node.js (сервер).
-
-3) Установка библиотек
-
-В папке проекта:
-
+bash
+Копировать код
 npm init -y
 npm i express pg bcrypt jsonwebtoken
+2) PostgreSQL: база и таблицы
+Создай базу:
 
-
-Если хочешь авто-перезапуск (не обязательно):
-
-npm i -D nodemon
-
-
-Зависимости проекта:
-
-express — сервер и роуты
-
-pg — подключение к PostgreSQL
-
-bcrypt — хэширование пароля
-
-jsonwebtoken — JWT токены
-
-4) Настройка PostgreSQL (создание базы и таблиц)
-4.1 Создать базу данных
-
-В pgAdmin или через SQL:
-
+sql
+Копировать код
 CREATE DATABASE testdb;
+Подключись к testdb и выполни:
 
-4.2 Подключиться к testdb и выполнить SQL-скрипт
-
-Важно: CREATE EXTENSION citext требует прав. Если не получается — можно убрать citext и сделать email TEXT.
-
--- (по желанию) расширение для регистронезависимого email
+sql
+Копировать код
 CREATE EXTENSION IF NOT EXISTS citext;
 
--- USERS
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   email CITEXT UNIQUE NOT NULL,
@@ -109,7 +83,6 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- PRODUCTS
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
@@ -120,7 +93,6 @@ CREATE TABLE IF NOT EXISTS products (
   updated_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
--- триггер чтобы updated_at обновлялся сам
 CREATE OR REPLACE FUNCTION set_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -134,161 +106,41 @@ CREATE TRIGGER trg_products_updated_at
 BEFORE UPDATE ON products
 FOR EACH ROW
 EXECUTE FUNCTION set_updated_at();
+Если citext не создаётся (нет прав) — замени email CITEXT на email TEXT.
 
-4.3 Частые ошибки в БД
+3) Настройка подключения к базе (db.js)
+Открой db.js и проверь данные:
 
-Ошибка про триггер “не существует, пропускается”
-Это нормально: DROP TRIGGER IF EXISTS просто сообщает, что удалять нечего, и дальше создаёт триггер.
-
-Ошибка с citext
-Если CREATE EXTENSION citext не запускается — убери citext и создай таблицу так:
-
-email TEXT UNIQUE NOT NULL
-
-5) Подключение к базе (db.js)
-
-Файл db.js (в корне проекта):
-
+js
+Копировать код
 const { Pool } = require("pg");
 
 const pool = new Pool({
   user: "postgres",
-  password: "123",      // поставь свой пароль
+  password: "123", // твой пароль
   host: "localhost",
   port: 5432,
   database: "testdb",
 });
 
 module.exports = pool;
-
-6) Сервер (index.js)
-
-Файл index.js (в корне проекта):
-
-const express = require("express");
-const app = express();
-
-app.use(express.json());
-app.use(express.static("public"));
-
-const usersRoutes = require("./routes/users.routes");
-const productsRoutes = require("./routes/products.routes");
-
-app.use("/api/users", usersRoutes);
-app.use("/api/products", productsRoutes);
-
-app.listen(3000, () => {
-  console.log("Server started on http://localhost:3000");
-});
-
-7) Роуты пользователей (routes/users.routes.js)
-
-В этом файле:
-
-регистрация
-
-логин (JWT)
-
-/me (проверка токена)
-
-middleware auth экспортируется для products
-
-Ключевые моменты:
-
-Пароль хранится только хэшем
-
-JWT токен передаётся в заголовке:
-Authorization: Bearer <token>
-
-В реальном проекте секрет (JWT_SECRET) хранят в .env, но здесь он захардкожен для учебного проекта.
-
-8) Роуты продуктов (routes/products.routes.js)
-
-В этом файле:
-
-GET /api/products — список только своих продуктов
-
-POST /api/products — создать продукт с owner_id текущего юзера
-
-PUT /api/products/:id — обновление только своего продукта
-
-DELETE /api/products/:id — удаление только своего продукта
-
-Везде используется auth, чтобы без токена продукты не получить.
-
-9) Фронт (public/)
-9.1 Важно: подключение файлов в index.html
-
-В конце public/index.html:
-
-<script src="auth.js"></script>
-<script src="products.api.js"></script>
-<script src="script.js"></script>
-
-
-Порядок критически важен:
-
-auth.js создаёт window.API и getToken()
-
-products.api.js использует getToken()
-
-script.js вызывает функции getProducts/createProduct/...
-
-9.2 API адрес
-
-Фронт работает через:
-
-window.API = window.API || "/api";
-
-
-Это значит, что запросы идут на тот же домен, что и сайт (например http://localhost:3000/api/...).
-
-10) Запуск проекта
-10.1 Запуск сервера
+4) Запуск сервера
+bash
+Копировать код
 node index.js
-
-
-Ожидаемый вывод:
-
-Server started on http://localhost:3000
-
-
-Открыть:
+Открой:
 
 http://localhost:3000
 
-11) Быстрые проверки API (для отладки)
-Регистрация
-
+API (эндпоинты)
+Auth
 POST /api/users/register
-
-{
-  "email": "a@a.com",
-  "password": "1234",
-  "name": "Alex"
-}
-
-Логин
 
 POST /api/users/login
 
-{
-  "email": "a@a.com",
-  "password": "1234"
-}
+GET /api/users/me (нужен токен)
 
-
-Ответ вернёт token.
-
-Профиль
-
-GET /api/users/me
-Header:
-
-Authorization: Bearer <token>
-
-Продукты
-
+Products (нужен токен)
 GET /api/products
 
 POST /api/products
@@ -297,35 +149,47 @@ PUT /api/products/:id
 
 DELETE /api/products/:id
 
-Header везде:
+Примеры запросов
+Регистрация
+POST /api/users/register
 
+json
+Копировать код
+{
+  "email": "a@a.com",
+  "password": "1234",
+  "name": "Alex"
+}
+Логин
+POST /api/users/login
+
+json
+Копировать код
+{
+  "email": "a@a.com",
+  "password": "1234"
+}
+Ответ содержит token. Его нужно передавать так:
+
+makefile
+Копировать код
 Authorization: Bearer <token>
+Частые ошибки
+getProducts is not defined / createProduct is not defined
+Причина: неверный порядок подключения JS.
 
-12) Частые проблемы и решения
-12.1 getProducts is not defined / createProduct is not defined
+В public/index.html должно быть:
 
-Причина: файлы подключены не в том порядке или смешаны в один файл.
+html
+Копировать код
+<script src="auth.js"></script>
+<script src="products.api.js"></script>
+<script src="script.js"></script>
+pool.query is not a function
+Причина: неправильный экспорт из db.js.
 
-Проверь:
+Должно быть:
 
-auth.js, products.api.js, script.js — три отдельных файла
-
-порядок <script> в index.html как в разделе 9.1
-
-12.2 pool.query is not a function
-
-Причина: неправильный экспорт db.js.
-
-Правильно:
-
+js
+Копировать код
 module.exports = pool;
-
-
-И импорт:
-
-const pool = require("../db");
-
-12.3 Ошибка 500 при register/login
-
-Смотри терминал, где запущен node — там будет реальный stack trace.
-Чаще всего: таблицы не созданы или не та база в db.js.
